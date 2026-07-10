@@ -22,16 +22,16 @@ struct pt ina226_config_update_handle_pt;
 
 void init_pt_task(void)
 {
-    PT_INIT(&main_pt);
-    PT_INIT(&stm_feed_wdt_handle_pt);
-    PT_INIT(&ina226_update_handle_pt);
-    PT_INIT(&relay_mode_update_handle_pt);
-    PT_INIT(&i2c_addr_io_handle_pt);
-    PT_INIT(&io_control_update_handle_pt);
-    PT_INIT(&jump_to_bootloader_setter_pt);
-    PT_INIT(&i2c_addr_change_handle_pt);
-    PT_INIT(&i2c_slave_timeout_handle_pt);
-    PT_INIT(&ina226_config_update_handle_pt);
+  PT_INIT(&main_pt);
+  PT_INIT(&stm_feed_wdt_handle_pt);
+  PT_INIT(&ina226_update_handle_pt);
+  PT_INIT(&relay_mode_update_handle_pt);
+  PT_INIT(&i2c_addr_io_handle_pt);
+  PT_INIT(&io_control_update_handle_pt);
+  PT_INIT(&jump_to_bootloader_setter_pt);
+  PT_INIT(&i2c_addr_change_handle_pt);
+  PT_INIT(&i2c_slave_timeout_handle_pt);
+  PT_INIT(&ina226_config_update_handle_pt);
 }
 
 static PT_THREAD(ina226_update_handle(struct pt *pt))
@@ -43,7 +43,8 @@ static PT_THREAD(ina226_update_handle(struct pt *pt))
             if (INA226_CheckI2cAddress(&ina226_ch1.Config, INA226_CH1_I2C_ADDR) == OK) {
                 peri_error.flags.ina226_ch1_init = 0;
                 INA226_MeasureAll(&ina226_ch1);
-            } else {
+            }
+            else {
                 peri_error.flags.ina226_ch1_init = 1;
             }
         }
@@ -51,7 +52,8 @@ static PT_THREAD(ina226_update_handle(struct pt *pt))
             if (INA226_CheckI2cAddress(&ina226_ch2.Config, INA226_CH2_I2C_ADDR) == OK) {
                 peri_error.flags.ina226_ch2_init = 0;
                 INA226_MeasureAll(&ina226_ch2);
-            } else {
+            }
+            else {
                 peri_error.flags.ina226_ch2_init = 1;
             }
         }
@@ -63,6 +65,7 @@ static PT_THREAD(ina226_update_handle(struct pt *pt))
 
 static PT_THREAD(ina226_config_update_handle(struct pt *pt))
 {
+
     PT_BEGIN(pt);
 
     while (1) {
@@ -99,24 +102,24 @@ static PT_THREAD(i2c_addr_change_handle(struct pt *pt))
     PT_END(pt);
 }
 
-static PT_THREAD(relay_mode_update_handle(struct pt *pt))
-{
+static PT_THREAD(relay_mode_update_handle(struct pt *pt)){
     PT_BEGIN(pt);
 
     while (1) {
         PT_WAIT_UNTIL(pt, g_events.relay_mode_update == 1 || g_events.relay_freq_update == 1);
 
-        if (g_events.relay_mode_update) {
+        if(g_events.relay_mode_update){
             if (io_control.io_ctrl.flags.relay_mode) {
                 relay_init();
                 relay_status_update();
-            } else {
+            }
+            else {
                 relay_deinit();
                 relay_gpio_init();
             }
         }
 
-        if (g_events.relay_freq_update && io_control.io_ctrl.flags.relay_mode) {
+        if(g_events.relay_freq_update && io_control.io_ctrl.flags.relay_mode){
             relay_status_update();
         }
 
@@ -137,35 +140,40 @@ static PT_THREAD(io_control_update_handle(struct pt *pt))
 
         if (io_control.io_ctrl.flags.relay_mode) {
             relay_status_update();
-        } else {
+        }else{
             if (io_control.io_ctrl.flags.ex_ctr_1) {
                 LL_GPIO_SetOutputPin(EX_CTR_1_GPIO_Port, EX_CTR_1_Pin);
-            } else {
+            }
+            else {
                 LL_GPIO_ResetOutputPin(EX_CTR_1_GPIO_Port, EX_CTR_1_Pin);
             }
 
             if (io_control.io_ctrl.flags.ex_ctr_2) {
                 LL_GPIO_SetOutputPin(EX_CTR_2_GPIO_Port, EX_CTR_2_Pin);
-            } else {
+            }
+            else {
                 LL_GPIO_ResetOutputPin(EX_CTR_2_GPIO_Port, EX_CTR_2_Pin);
             }
         }
 
         if (io_control.io_ctrl.flags.ch1_pu_en) {
             LL_GPIO_SetOutputPin(CH1_PU_EN_GPIO_Port, CH1_PU_EN_Pin);
-        } else {
+        }
+        else {
             LL_GPIO_ResetOutputPin(CH1_PU_EN_GPIO_Port, CH1_PU_EN_Pin);
         }
 
         if (io_control.io_ctrl.flags.ch2_pu_en) {
             LL_GPIO_SetOutputPin(CH2_PU_EN_GPIO_Port, CH2_PU_EN_Pin);
-        } else {
+        }
+        else {
             LL_GPIO_ResetOutputPin(CH2_PU_EN_GPIO_Port, CH2_PU_EN_Pin);
         }
 
         if (io_control.io_ctrl.flags.relay_trig_0) {
             LL_GPIO_SetOutputPin(RELAY_TRIG_0_GPIO_Port, RELAY_TRIG_0_Pin);
-        } else {
+        }
+        else {
             LL_GPIO_ResetOutputPin(RELAY_TRIG_0_GPIO_Port, RELAY_TRIG_0_Pin);
         }
     }
@@ -173,12 +181,11 @@ static PT_THREAD(io_control_update_handle(struct pt *pt))
     PT_END(pt);
 }
 
-static PT_THREAD(jump_to_bootloader_setter(struct pt *pt))
-{
+static PT_THREAD(jump_to_bootloader_setter(struct pt *pt)) {
     PT_BEGIN(pt);
-    while (1) {
+    while(1) {
         PT_WAIT_UNTIL(pt, g_events.jump_to_bootloader == 1);  // 等待设置触发信号
-        g_events.jump_to_bootloader = 0;                      // 清除标志
+        g_events.jump_to_bootloader = 0; //清除标志
 
         Jump_Bootloader();
 
@@ -195,7 +202,7 @@ static PT_THREAD(i2c_addr_io_handle(struct pt *pt))
         PT_TIMER_DELAY(pt, PT_MILLIS_SECOND(1));
 
         if (!i2c_addr_io_data.i2c_addr_7bit.flags.addr_reflash) {
-            i2c_addr_io_data.i2c_addr.value           = get_i2c_addr_gpio_in();
+            i2c_addr_io_data.i2c_addr.value = get_i2c_addr_gpio_in();
             i2c_addr_io_data.i2c_addr_7bit.flags.addr = i2c_addr_base + i2c_addr_io_data.i2c_addr.value;
         }
     }
@@ -215,16 +222,14 @@ static PT_THREAD(stm_feed_wdt_handle(struct pt *pt))
     PT_END(pt);
 }
 
-static PT_THREAD(i2c_slave_timeout_handle(struct pt *pt))
-{
+static PT_THREAD(i2c_slave_timeout_handle(struct pt *pt)) {
     static uint32_t hal_get_tick_temp = 0;
 
     PT_BEGIN(pt);
-    while (1) {
+    while(1) {
         if (i2c_slave_state != I2C_SLAVE_STATE_IDLE) {
             hal_get_tick_temp = HAL_GetTick();
-            if ((hal_get_tick_temp > i2c_ex_timeout_start) &&
-                (hal_get_tick_temp - i2c_ex_timeout_start > I2C_TIMEOUT_MS)) {
+            if ((hal_get_tick_temp > i2c_ex_timeout_start) && (hal_get_tick_temp - i2c_ex_timeout_start > I2C_TIMEOUT_MS)) {
                 i2c2_reset();
                 i2c_slave_state = I2C_SLAVE_STATE_IDLE;
             }
@@ -237,7 +242,7 @@ static PT_THREAD(i2c_slave_timeout_handle(struct pt *pt))
 void main_scheduler(struct pt *pt)
 {
     PT_BEGIN(pt);
-    while (1) {
+    while(1) {
         // 按优先级顺序调度
         PT_SCHEDULE(stm_feed_wdt_handle(&stm_feed_wdt_handle_pt));
         PT_SCHEDULE(relay_mode_update_handle(&relay_mode_update_handle_pt));
